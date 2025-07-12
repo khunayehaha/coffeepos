@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>กาแฟไอ้สุ - POS System</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>กาแฟไอ้สุ</h1>
+        <nav>
+            <button onclick="showPage('pos')" class="active" id="posNavBtn">หน้าร้าน (POS)</button>
+            <button onclick="showPage('history')" id="historyNavBtn">สรุปยอดขาย</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- POS Section -->
+        <section id="pos-section" class="page-section active">
+            <div class="pos-container">
+                <div class="menu-items-grid">
+                    <!-- Menu items will be loaded here by JavaScript -->
+                </div>
+                <div class="order-summary">
+                    <h2>รายการออเดอร์</h2>
+                    <ul id="order-list">
+                        <!-- Order items will be loaded here by JavaScript -->
+                    </ul>
+                    <div class="order-total">
+                        <strong>ยอดรวม:</strong> <span id="order-total-span">0.00</span> บาท
+                    </div>
+                    <div class="payment-options">
+                        <button class="payment-button cash" onclick="completeSale('Cash')">ชำระเงินสด</button>
+                        <button class="payment-button transfer" onclick="completeSale('Transfer')">โอนเงิน</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sales History Section -->
+        <section id="history-section" class="page-section">
+            <h2>สรุปยอดขายประจำวัน</h2>
+            <div class="date-picker-container">
+                เลือกวันที่: <input type="date" id="history-date-picker">
+            </div>
+
+            <div class="daily-summary-cards">
+                <div class="summary-card total">
+                    <h3>ยอดขายรวม</h3>
+                    <p id="daily-total-sales">0.00 บาท</p>
+                </div>
+                <div class="summary-card cash">
+                    <h3>เงินสด</h3>
+                    <p id="daily-cash-sales">0.00 บาท</p>
+                </div>
+                <div class="summary-card transfer">
+                    <h3>เงินโอน</h3>
+                    <p id="daily-transfer-sales">0.00 บาท</p>
+                </div>
+            </div>
+
+            <h3>รายการขายทั้งหมด</h3>
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>เวลา</th>
+                        <th>รายการ</th>
+                        <th>ยอดรวม</th>
+                        <th>ช่องทาง</th>
+                    </tr>
+                </thead>
+                <tbody id="sales-list-table-body">
+                    <!-- Sales records will be loaded here by JavaScript -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
