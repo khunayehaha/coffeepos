@@ -15,7 +15,8 @@ const menuItems = [
     { name: "เพียวมัทฉะ", price: 40 },
     { name: "มัทฉะลาเต้", price: 45 },
     { name: "มัทฉะน้ำส้ม", price: 45 },
-    { name: "มัทฉะน้ำผึ้งมะนาว", price: 45 }
+    { name: "มัทฉะน้ำผึ้งมะนาว", price: 45 },
+    { name: "เลม่อนน้ำผึ้งโซดา", proce: 35}
 ];
 
 let currentOrder = [];
