@@ -73,8 +73,7 @@ main {
 }
 
 /* POS Section Styles */
-/* แก้ไข: ใช้ ID selector (#) สำหรับ pos-section h2, ตามโครงสร้าง HTML */
-#pos-section h2 {
+#pos-section h2 { /* แก้ไข: ใช้ ID selector (#) สำหรับ pos-section h2 */
     color: var(--primary-color);
     text-align: center;
     margin-bottom: 1.5rem;
@@ -139,25 +138,22 @@ main {
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* แก้ไข: ใช้ ID selector (#) สำหรับ order-list, ตามโครงสร้าง HTML */
-#order-list {
+#order-list { /* แก้ไข: ใช้ ID selector (#) สำหรับ order-list */
     list-style: none;
     padding: 0;
     margin-bottom: 1.5rem;
     min-height: 150px; /* Ensure some height even when empty */
 }
 
-/* แก้ไข: ใช้ ID selector (#) สำหรับ order-list li, ตามโครงสร้าง HTML */
-#order-list li {
+#order-list li { /* แก้ไข: ใช้ ID selector (#) สำหรับ order-list li */
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.7rem 0;
-    border-bottom: 1px dashed #eee; /* แก้ไข: ใช้ Hex code */
+    border-bottom: 1px dashed #eee;
 }
 
-/* แก้ไข: ใช้ ID selector (#) สำหรับ order-list li:last-child, ตามโครงสร้าง HTML */
-#order-list li:last-child {
+#order-list li:last-child { /* แก้ไข: ใช้ ID selector (#) สำหรับ order-list li:last-child */
     border-bottom: none;
 }
 
@@ -199,7 +195,7 @@ main {
     transition: background-color 0.2s;
 }
 .remove-item-btn:hover {
-    background-color: #c82333; /* แก้ไข: ใช้ Hex code */
+    background-color: #c82333;
 }
 
 .order-total {
@@ -235,19 +231,18 @@ main {
     background-color: var(--cash-color);
 }
 .payment-button.cash:hover {
-    background-color: #218838; /* แก้ไข: ใช้ Hex code */
+    background-color: #218838;
 }
 
 .payment-button.transfer {
     background-color: var(--transfer-color);
 }
 .payment-button.transfer:hover {
-    background-color: #0056b3; /* แก้ไข: ใช้ Hex code */
+    background-color: #0056b3;
 }
 
 /* Sales History Section Styles */
-/* แก้ไข: ใช้ ID selector (#) สำหรับ history-section h2, h3, ตามโครงสร้าง HTML */
-#history-section h2, #history-section h3 {
+#history-section h2, #history-section h3 { /* แก้ไข: ใช้ ID selector (#) สำหรับ history-section h2, h3 */
     color: var(--primary-color);
     text-align: center;
     margin-bottom: 1.5rem;
@@ -258,8 +253,7 @@ main {
     margin-bottom: 2rem;
 }
 
-/* แก้ไข: ใช้ ID selector (#) สำหรับ history-date-picker, ตามโครงสร้าง HTML */
-#history-date-picker {
+#history-date-picker { /* แก้ไข: ใช้ ID selector (#) สำหรับ history-date-picker */
     padding: 0.8rem;
     border: 1px solid var(--border-color);
     border-radius: 5px;
@@ -323,16 +317,15 @@ main {
 }
 
 .sales-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9; /* แก้ไข: ใช้ Hex code */
+    background-color: #f9f9f9;
 }
 
 .sales-table tbody tr:hover {
-    background-color: #f1f1f1; /* แก้ไข: ใช้ Hex code */
+    background-color: #f1f1f1;
 }
 
 /* NEW: Monthly Report Section Styles */
-/* แก้ไข: ใช้ ID selector (#) สำหรับ monthly-section h2, h3, ตามโครงสร้าง HTML */
-#monthly-section h2, #monthly-section h3 {
+#monthly-section h2, #monthly-section h3 { /* แก้ไข: ใช้ ID selector (#) สำหรับ monthly-section h2, h3 */
     color: var(--primary-color);
     text-align: center;
     margin-bottom: 1.5rem;

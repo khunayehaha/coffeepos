@@ -22,7 +22,7 @@ const menuItems = [
 let currentOrder = [];
 let salesHistory = []; // Stores all sales records
 
-// Global variable for Chart.js instance
+// Global variable for Chart.js instance (ย้ายมาที่นี่)
 let productSalesChartInstance = null;
 
 // DOM Elements
@@ -62,8 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
     historyDatePicker.value = formatDateForInput(today);
     renderSalesHistory(today); // แสดงข้อมูลรายวันของวันนี้
 
-    // Render monthly report on initial load if needed (or when monthly tab is clicked)
-    // We'll call renderMonthlyReport() when the monthly tab is activated
+    // ไม่ต้องเรียก renderMonthlyReport() ตรงนี้ใน DOMContentLoaded
+    // เพราะเราจะเรียกมันเมื่อแท็บ 'monthly' ถูกเปิดใช้งาน
 });
 
 historyDatePicker.addEventListener('change', (event) => {
@@ -235,7 +235,7 @@ function completeSale(paymentType) {
     const today = new Date();
     historyDatePicker.value = formatDateForInput(today); // ตั้งค่า Date Picker เป็นวันนี้
     renderSalesHistory(today); // แสดงประวัติการขายสำหรับวันนี้
-    renderMonthlyReport(); // New: อัปเดตภาพรวมรายเดือนด้วย
+    // ไม่ต้องเรียก renderMonthlyReport() ตรงนี้ เพราะมันจะถูกเรียกเมื่อแท็บถูก activate
 }
 
 
@@ -335,7 +335,7 @@ function renderMonthlyReport() {
 function drawProductSalesPieChart(productQuantities) {
     const ctx = productSalesChartCanvas.getContext('2d');
 
-    // Destroy existing chart instance if it exists
+    // Destroy existing chart instance if it exists (สำคัญมาก!)
     if (productSalesChartInstance) {
         productSalesChartInstance.destroy();
     }
@@ -438,6 +438,6 @@ function showPage(pageName) {
     } else if (pageName === 'monthly') { // New: Monthly Report Page
         monthlySection.classList.add('active');
         monthlyNavBtn.classList.add('active');
-        renderMonthlyReport(); // Render monthly report when this tab is active
+        renderMonthlyReport(); // สำคัญ: เรียก renderMonthlyReport() เมื่อแท็บนี้ถูกเปิดใช้งาน
     }
 }
