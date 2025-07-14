@@ -10,6 +10,7 @@
     --transfer-color: #007bff;
     --total-color: #6f42c1;
     --delete-color: #dc3545;
+    --chart-bg-color: #f8f9fa; /* สีพื้นหลังสำหรับกราฟ */
 }
 
 body {
@@ -323,7 +324,67 @@ main {
     background-color: #f1f1f1;
 }
 
+/* NEW: Monthly Report Section Styles */
+#monthly-section h2, #monthly-section h3 {
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.monthly-summary-container {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.monthly-summary-chart {
+    flex: 2; /* Chart takes more space */
+    min-width: 300px;
+    background-color: var(--chart-bg-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid var(--primary-color);
+}
+
+.monthly-summary-chart h3 {
+    margin-top: 0;
+    font-size: 1.3rem;
+    text-align: center;
+    color: var(--primary-color);
+}
+
+.monthly-summary-details {
+    flex: 1; /* Summary cards take less space */
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.monthly-summary-details .summary-card {
+    min-width: unset; /* Override previous flex-item min-width */
+    width: 100%; /* Make cards fill their flex container */
+}
+
+
 /* Responsive adjustments */
+@media (max-width: 992px) {
+    .monthly-summary-container {
+        flex-direction: column; /* Stack chart and details on smaller screens */
+        align-items: center; /* Center items when stacked */
+    }
+    .monthly-summary-chart {
+        width: 100%;
+        max-width: 500px; /* Limit chart width even when full column */
+    }
+    .monthly-summary-details {
+        width: 100%;
+        max-width: 500px; /* Limit summary width */
+    }
+}
+
 @media (max-width: 768px) {
     .pos-container {
         flex-direction: column;

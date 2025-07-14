@@ -6,13 +6,17 @@
     <title>กาแฟไอ้สุ - POS System</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+    <!-- เพิ่ม Chart.js CDN ที่นี่ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
         <h1>กาแฟไอ้สุ</h1>
         <nav>
             <button onclick="showPage('pos')" class="active" id="posNavBtn">หน้าร้าน (POS)</button>
-            <button onclick="showPage('history')" id="historyNavBtn">สรุปยอดขาย</button>
+            <button onclick="showPage('history')" id="historyNavBtn">สรุปยอดขายรายวัน</button>
+            <!-- เพิ่มปุ่มสำหรับภาพรวมรายเดือน -->
+            <button onclick="showPage('monthly')" id="monthlyNavBtn">ภาพรวมรายเดือน</button>
         </nav>
     </header>
 
@@ -76,6 +80,49 @@
                 </tbody>
             </table>
         </section>
+
+        <!-- New: Monthly Report Section -->
+        <section id="monthly-section" class="page-section">
+            <h2>ภาพรวมยอดขายประจำเดือน (30 วันย้อนหลัง)</h2>
+            <div class="monthly-summary-container">
+                <div class="monthly-summary-chart">
+                    <h3>ยอดขายสินค้าตามจำนวน (30 วันย้อนหลัง)</h3>
+                    <canvas id="productSalesChart"></canvas>
+                </div>
+                <div class="monthly-summary-details">
+                    <h3>สรุปยอดเงิน (30 วันย้อนหลัง)</h3>
+                    <div class="summary-card total">
+                        <h3>ยอดขายรวมสุทธิ</h3>
+                        <p id="monthly-total-sales">0.00 บาท</p>
+                    </div>
+                    <div class="summary-card cash">
+                        <h3>เงินสด</h3>
+                        <p id="monthly-cash-sales">0.00 บาท</p>
+                    </div>
+                    <div class="summary-card transfer">
+                        <h3>เงินโอน</h3>
+                        <p id="monthly-transfer-sales">0.00 บาท</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Optional: Table for detailed monthly sales, if needed later -->
+            <!-- <h3>รายการขายทั้งหมด (30 วันย้อนหลัง)</h3>
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>วันที่ & เวลา</th>
+                        <th>รายการ</th>
+                        <th>ยอดรวม</th>
+                        <th>ช่องทาง</th>
+                    </tr>
+                </thead>
+                <tbody id="monthly-sales-list-table-body">
+                    
+                </tbody>
+            </table> -->
+        </section>
+
     </main>
 
     <script src="script.js"></script>

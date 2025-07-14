@@ -22,14 +22,21 @@ const menuItems = [
 let currentOrder = [];
 let salesHistory = []; // Stores all sales records
 
+// Global variable for Chart.js instance
+let productSalesChartInstance = null;
+
 // DOM Elements
 const menuItemsGrid = document.querySelector('.menu-items-grid');
 const orderList = document.getElementById('order-list');
 const orderTotalSpan = document.getElementById('order-total-span');
 const posSection = document.getElementById('pos-section');
 const historySection = document.getElementById('history-section');
+const monthlySection = document.getElementById('monthly-section'); // New: Monthly Section
+
 const posNavBtn = document.getElementById('posNavBtn');
 const historyNavBtn = document.getElementById('historyNavBtn');
+const monthlyNavBtn = document.getElementById('monthlyNavBtn'); // New: Monthly Nav Button
+
 const historyDatePicker = document.getElementById('history-date-picker');
 
 const dailyTotalSales = document.getElementById('daily-total-sales');
@@ -37,17 +44,26 @@ const dailyCashSales = document.getElementById('daily-cash-sales');
 const dailyTransferSales = document.getElementById('daily-transfer-sales');
 const salesListTableBody = document.getElementById('sales-list-table-body');
 
+// New: Monthly Report DOM Elements
+const monthlyTotalSales = document.getElementById('monthly-total-sales');
+const monthlyCashSales = document.getElementById('monthly-cash-sales');
+const monthlyTransferSales = document.getElementById('monthly-transfer-sales');
+const productSalesChartCanvas = document.getElementById('productSalesChart');
+
 // --- Initialization and Data Loading ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadSalesHistory();
+    loadSalesHistory(); // โหลดข้อมูลและทำการ prune ข้อมูลเก่าออก
     renderMenuItems();
     renderOrder();
     
     // Set today's date for the date picker and render history
     const today = new Date();
     historyDatePicker.value = formatDateForInput(today);
-    renderSalesHistory(today);
+    renderSalesHistory(today); // แสดงข้อมูลรายวันของวันนี้
+
+    // Render monthly report on initial load if needed (or when monthly tab is clicked)
+    // We'll call renderMonthlyReport() when the monthly tab is activated
 });
 
 historyDatePicker.addEventListener('change', (event) => {
@@ -66,7 +82,19 @@ function loadSalesHistory() {
     if (storedHistory) {
         salesHistory = JSON.parse(storedHistory);
     }
+    // New: Prune old data to keep only last 30 days
+    pruneSalesHistory();
 }
+
+function pruneSalesHistory() {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30); // ย้อนไป 30 วันจากปัจจุบัน
+    // กรองเอาเฉพาะข้อมูลที่มี timestamp มากกว่าหรือเท่ากับ 30 วันที่แล้ว
+    salesHistory = salesHistory.filter(sale => new Date(sale.timestamp) >= thirtyDaysAgo);
+    saveSalesHistory(); // บันทึกข้อมูลที่ถูก prune แล้วกลับลง Local Storage
+    console.log(`Sales history pruned. Keeping data from: ${thirtyDaysAgo.toLocaleDateString('th-TH')}`);
+}
+
 
 // --- POS Functions ---
 
@@ -141,7 +169,6 @@ function renderOrder() {
     orderTotalSpan.textContent = total.toFixed(2);
 }
 
-// *** เริ่มการแก้ไขในฟังก์ชัน completeSale ตรงนี้ ***
 function completeSale(paymentType) {
     // 1. ตรวจสอบว่ามีรายการในออเดอร์หรือไม่
     if (currentOrder.length === 0) {
@@ -154,56 +181,41 @@ function completeSale(paymentType) {
 
     // ตรวจสอบประเภทการชำระเงิน
     if (paymentType === 'Cash') {
-        // 2. ถ้าเป็นการชำระเงินสด:
-        //    แสดง prompt เพื่อขอจำนวนเงินที่ลูกค้าจ่ายมา
         const amountPaidStr = prompt(`ยอดรวมที่ต้องชำระ: ${totalAmount.toFixed(2)} บาท\nกรุณาใส่จำนวนเงินที่ลูกค้าจ่ายมา:`);
 
-        //    หากผู้ใช้กดยกเลิก prompt
         if (amountPaidStr === null) {
             return; // ยกเลิกการทำรายการ
         }
 
-        const amountPaid = parseFloat(amountPaidStr); // แปลงข้อความเป็นตัวเลข
+        const amountPaid = parseFloat(amountPaidStr);
 
-        //    3. ตรวจสอบความถูกต้องของจำนวนเงินที่รับมา
         if (isNaN(amountPaid) || amountPaid < totalAmount) {
             alert('จำนวนเงินที่รับไม่ถูกต้อง หรือน้อยกว่ายอดรวมที่ต้องชำระ กรุณาลองอีกครั้ง');
-            return; // ยกเลิกการทำรายการ
+            return;
         }
 
-        //    4. คำนวณเงินทอน
         const change = amountPaid - totalAmount;
-
-        //    5. แสดง Pop-up ยืนยันการชำระเงิน พร้อมยอดเงินทอน
         const confirmMessage = `ยืนยันการชำระเงินสด?\nยอดรวม: ${totalAmount.toFixed(2)} บาท\nเงินที่ได้รับ: ${amountPaid.toFixed(2)} บาท\nเงินทอน: ${change.toFixed(2)} บาท`;
         const confirmed = confirm(confirmMessage);
 
-        //    หากผู้ใช้กดยกเลิกการยืนยัน
         if (!confirmed) {
-            return; // ยกเลิกการทำรายการ
+            return;
         }
         
-        // กำหนดข้อความแจ้งเตือนสำหรับเงินสด
         finalAlertMessage = `ชำระเงินสดเรียบร้อยแล้ว\nยอดรวม: ${totalAmount.toFixed(2)} บาท\nเงินที่ได้รับ: ${amountPaid.toFixed(2)} บาท\nเงินทอน: ${change.toFixed(2)} บาท`;
 
     } else if (paymentType === 'Transfer') {
-        // 6. ถ้าเป็นการชำระเงินโอน:
-        //    แสดง Pop-up ยืนยันการชำระเงินโอน
         const confirmed = confirm(`ยืนยันการชำระเงินโอน ยอดรวม ${totalAmount.toFixed(2)} บาท ใช่หรือไม่?`);
         
-        //    หากผู้ใช้กดยกเลิกการยืนยัน
         if (!confirmed) {
-            return; // ยกเลิกการทำรายการ
+            return;
         }
-        // กำหนดข้อความแจ้งเตือนสำหรับเงินโอน
         finalAlertMessage = `ชำระเงินโอนเรียบร้อยแล้ว ยอดรวม ${totalAmount.toFixed(2)} บาท`;
     } else {
-        // กรณีมี paymentType อื่นๆ ที่ยังไม่ได้ระบุ
         alert('ไม่รองรับวิธีการชำระเงินนี้');
         return;
     }
 
-    // *** ส่วนนี้คือ Logic การบันทึกการขาย ที่ทำงานเหมือนเดิม แต่จะถูกเรียกหลังจากการยืนยัน ***
     const sale = {
         timestamp: new Date().toISOString(),
         items: JSON.parse(JSON.stringify(currentOrder)), // Deep copy ของรายการสินค้า
@@ -217,21 +229,22 @@ function completeSale(paymentType) {
     currentOrder = []; // ล้างออเดอร์ปัจจุบัน
     renderOrder();     // อัปเดตการแสดงผลหน้า POS
 
-    alert(finalAlertMessage); // แสดงข้อความแจ้งเตือนตามที่เตรียมไว้
+    alert(finalAlertMessage);
     
-    // หลังจากทำรายการขายเสร็จสิ้น ให้อัปเดตประวัติการขายสำหรับวันนี้
+    // หลังจากทำรายการขายเสร็จสิ้น ให้อัปเดตประวัติการขายสำหรับวันนี้และภาพรวมรายเดือน
     const today = new Date();
     historyDatePicker.value = formatDateForInput(today); // ตั้งค่า Date Picker เป็นวันนี้
     renderSalesHistory(today); // แสดงประวัติการขายสำหรับวันนี้
+    renderMonthlyReport(); // New: อัปเดตภาพรวมรายเดือนด้วย
 }
-// *** สิ้นสุดการแก้ไขในฟังก์ชัน completeSale ***
 
 
-// --- Sales History Functions ---
+// --- Sales History Functions (Daily) ---
 
 function renderSalesHistory(date) {
     const selectedDateString = formatDateToYYYYMMDD(date);
     
+    // กรองเฉพาะยอดขายของวันนั้นๆ
     const salesForSelectedDate = salesHistory.filter(sale => {
         const saleDate = new Date(sale.timestamp);
         return formatDateToYYYYMMDD(saleDate) === selectedDateString;
@@ -275,6 +288,114 @@ function renderSalesHistory(date) {
     dailyTransferSales.textContent = dailyTransfer.toFixed(2) + ' บาท';
 }
 
+
+// --- New: Monthly Report Functions ---
+
+function renderMonthlyReport() {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30); // ย้อนไป 30 วันจากปัจจุบัน
+
+    // กรองยอดขายที่อยู่ในช่วง 30 วันย้อนหลัง
+    const monthlySales = salesHistory.filter(sale => new Date(sale.timestamp) >= thirtyDaysAgo);
+
+    let totalSales = 0;
+    let cashSales = 0;
+    let transferSales = 0;
+    const productQuantities = {}; // Object to store quantity of each product
+
+    if (monthlySales.length === 0) {
+        // Handle case with no sales in the last 30 days
+        monthlyTotalSales.textContent = '0.00 บาท';
+        monthlyCashSales.textContent = '0.00 บาท';
+        monthlyTransferSales.textContent = '0.00 บาท';
+        drawProductSalesPieChart({}); // Draw empty chart
+        return;
+    }
+
+    monthlySales.forEach(sale => {
+        totalSales += sale.totalAmount;
+        if (sale.paymentType === 'Cash') {
+            cashSales += sale.totalAmount;
+        } else if (sale.paymentType === 'Transfer') {
+            transferSales += sale.totalAmount;
+        }
+
+        sale.items.forEach(item => {
+            productQuantities[item.name] = (productQuantities[item.name] || 0) + item.quantity;
+        });
+    });
+
+    monthlyTotalSales.textContent = totalSales.toFixed(2) + ' บาท';
+    monthlyCashSales.textContent = cashSales.toFixed(2) + ' บาท';
+    monthlyTransferSales.textContent = transferSales.toFixed(2) + ' บาท';
+
+    drawProductSalesPieChart(productQuantities);
+}
+
+function drawProductSalesPieChart(productQuantities) {
+    const ctx = productSalesChartCanvas.getContext('2d');
+
+    // Destroy existing chart instance if it exists
+    if (productSalesChartInstance) {
+        productSalesChartInstance.destroy();
+    }
+
+    const labels = Object.keys(productQuantities);
+    const data = Object.values(productQuantities);
+    const backgroundColors = generateRandomColors(labels.length);
+
+    productSalesChartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: backgroundColors,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // Allow canvas to resize freely within its container
+            plugins: {
+                legend: {
+                    position: 'right', // Legend position (top, left, bottom, right)
+                    labels: {
+                        font: {
+                            size: 14 // Font size of legend labels
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed !== null) {
+                                label += context.parsed + ' แก้ว'; // Display "X แก้ว"
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Helper function to generate an array of distinct random colors
+function generateRandomColors(numColors) {
+    const colors = [];
+    for (let i = 0; i < numColors; i++) {
+        const hue = (i * 137.508) % 360; // Use golden angle approximation for even distribution
+        colors.push(`hsl(${hue}, 70%, 60%)`); // HSL for better control over vibrancy
+    }
+    return colors;
+}
+
+
 // --- Utility Functions ---
 
 function formatDateToYYYYMMDD(date) {
@@ -291,11 +412,16 @@ function formatDateForInput(date) {
 // --- Page Navigation ---
 
 function showPage(pageName) {
+    // Remove active class from all sections and buttons
     posSection.classList.remove('active');
     historySection.classList.remove('active');
+    monthlySection.classList.remove('active'); // New: Monthly Section
+    
     posNavBtn.classList.remove('active');
     historyNavBtn.classList.remove('active');
+    monthlyNavBtn.classList.remove('active'); // New: Monthly Nav Button
 
+    // Add active class to the selected section and button
     if (pageName === 'pos') {
         posSection.classList.add('active');
         posNavBtn.classList.add('active');
@@ -309,5 +435,9 @@ function showPage(pageName) {
         } else {
             renderSalesHistory(new Date()); // Default to today if nothing selected
         }
+    } else if (pageName === 'monthly') { // New: Monthly Report Page
+        monthlySection.classList.add('active');
+        monthlyNavBtn.classList.add('active');
+        renderMonthlyReport(); // Render monthly report when this tab is active
     }
 }
