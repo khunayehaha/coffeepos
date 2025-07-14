@@ -1,5 +1,3 @@
-// script.js
-
 const menuItems = [
     { name: "มัทฉะน้ำมะพร้าว", price: 45 },
     { name: "ชาไทย", price: 30 },
@@ -21,13 +19,13 @@ const menuItems = [
     { name: "เลม่อนดองน้ำผึ้งโซดา", price: 35 },
     { name: "เปลี่ยนนม OAT", price: 10 },
     { name: "เพิ่ม SHOT กาแฟ", price: 10},
-    { name: "ลูกค้านำแก้วมาเอง", price: -5 } // ***** แก้ไขตรงนี้เป็น -5 บาท *****
+    { name: "ลูกค้านำแก้วมาเอง", price: -5 }
 ];
 
 let currentOrder = [];
 let salesHistory = []; // Stores all sales records
 
-// Global variable for Chart.js instance (ย้ายมาที่นี่)
+// Global variable for Chart.js instance
 let productSalesChartInstance = null;
 
 // DOM Elements
@@ -36,11 +34,11 @@ const orderList = document.getElementById('order-list');
 const orderTotalSpan = document.getElementById('order-total-span');
 const posSection = document.getElementById('pos-section');
 const historySection = document.getElementById('history-section');
-const monthlySection = document.getElementById('monthly-section'); // New: Monthly Section
+const monthlySection = document.getElementById('monthly-section');
 
 const posNavBtn = document.getElementById('posNavBtn');
 const historyNavBtn = document.getElementById('historyNavBtn');
-const monthlyNavBtn = document.getElementById('monthlyNavBtn'); // New: Monthly Nav Button
+const monthlyNavBtn = document.getElementById('monthlyNavBtn');
 
 const historyDatePicker = document.getElementById('history-date-picker');
 
@@ -48,8 +46,9 @@ const dailyTotalSales = document.getElementById('daily-total-sales');
 const dailyCashSales = document.getElementById('daily-cash-sales');
 const dailyTransferSales = document.getElementById('daily-transfer-sales');
 const salesListTableBody = document.getElementById('sales-list-table-body');
+const dailyTotalItems = document.getElementById('daily-total-items'); // NEW: สำหรับแสดงจำนวนแก้วที่ขายได้
 
-// New: Monthly Report DOM Elements
+// Monthly Report DOM Elements
 const monthlyTotalSales = document.getElementById('monthly-total-sales');
 const monthlyCashSales = document.getElementById('monthly-cash-sales');
 const monthlyTransferSales = document.getElementById('monthly-transfer-sales');
@@ -87,7 +86,7 @@ function loadSalesHistory() {
     if (storedHistory) {
         salesHistory = JSON.parse(storedHistory);
     }
-    // New: Prune old data to keep only last 30 days
+    // Prune old data to keep only last 30 days
     pruneSalesHistory();
 }
 
@@ -118,9 +117,6 @@ function renderMenuItems() {
 }
 
 function addItemToOrder(item) {
-    // โค้ดส่วนนี้ทำงานได้ดีอยู่แล้วแม้จะมีราคาติดลบ
-    // ถ้าสินค้า (item.name) มีอยู่ในตะกร้าแล้ว ให้เพิ่มจำนวน
-    // ถ้ายังไม่มีในตะกร้า ให้เพิ่มเข้าไปใหม่
     const existingItem = currentOrder.find(orderItem => orderItem.name === item.name);
     if (existingItem) {
         existingItem.quantity++;
@@ -154,9 +150,8 @@ function renderOrder() {
     } else {
         currentOrder.forEach((item, index) => {
             const li = document.createElement('li');
-            const itemTotalPrice = item.price * item.quantity; // item.price จะเป็น -5 ถ้าเป็น "ลูกค้านำแก้วมาเอง"
+            const itemTotalPrice = item.price * item.quantity;
 
-            // คำนวณยอดรวม ซึ่งจะรวมค่าติดลบเข้าไปด้วย
             total += itemTotalPrice;
 
             li.innerHTML = `
@@ -263,6 +258,14 @@ function renderSalesHistory(date) {
     let dailyCash = 0;
     let dailyTransfer = 0;
     let dailyTotal = 0;
+    let dailyTotalCups = 0; // NEW: ตัวแปรสำหรับนับจำนวนแก้วทั้งหมด
+
+    // กำหนดรายการที่ "ไม่รวม" ในการนับจำนวนแก้ว
+    const excludedItemsForCupCount = [
+        "เพิ่ม SHOT กาแฟ",
+        "เปลี่ยนนม OAT",
+        "ลูกค้านำแก้วมาเอง"
+    ];
 
     salesListTableBody.innerHTML = ''; // Clear previous entries
 
@@ -276,6 +279,14 @@ function renderSalesHistory(date) {
             } else if (sale.paymentType === 'Transfer') {
                 dailyTransfer += sale.totalAmount;
             }
+
+            // NEW: วนลูปเพื่อรวมจำนวนแก้ว โดยยกเว้นรายการที่ไม่ต้องการ
+            sale.items.forEach(item => {
+                // ตรวจสอบว่าชื่อสินค้าอยู่ในรายการที่ไม่ต้องการนับหรือไม่
+                if (!excludedItemsForCupCount.includes(item.name)) {
+                    dailyTotalCups += item.quantity;
+                }
+            });
 
             const tr = document.createElement('tr');
             const saleTime = new Date(sale.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
@@ -296,6 +307,7 @@ function renderSalesHistory(date) {
     dailyTotalSales.textContent = dailyTotal.toFixed(2) + ' บาท';
     dailyCashSales.textContent = dailyCash.toFixed(2) + ' บาท';
     dailyTransferSales.textContent = dailyTransfer.toFixed(2) + ' บาท';
+    dailyTotalItems.textContent = dailyTotalCups + ' แก้ว'; // NEW: อัปเดตจำนวนแก้วที่ขายได้
 }
 
 
@@ -330,10 +342,6 @@ function renderMonthlyReport() {
             transferSales += sale.totalAmount;
         }
 
-        // ในส่วนนี้เราจะนับจำนวนสินค้า ไม่ว่าจะเป็นสินค้าปกติหรือรายการลดราคา
-        // หากต้องการให้นับเฉพาะสินค้าหลัก ไม่รวมรายการเสริม/ลดราคา ควรเพิ่มเงื่อนไข
-        // เช่น if (item.price > 0) { productQuantities[item.name] = ... }
-        // แต่ในที่นี้ เรานับทุกรายการที่ถูกเพิ่มเข้ามา
         sale.items.forEach(item => {
             productQuantities[item.name] = (productQuantities[item.name] || 0) + item.quantity;
         });
@@ -388,8 +396,6 @@ function drawProductSalesPieChart(productQuantities) {
                                 label += ': ';
                             }
                             if (context.parsed !== null) {
-                                // เรายังคงแสดงเป็น "X แก้ว" สำหรับทุกรายการ
-                                // หากต้องการแยกประเภทการแสดงผล (เช่น "X ส่วนลด") ต้องเพิ่มเงื่อนไขตรงนี้
                                 label += context.parsed + ' แก้ว';
                             }
                             return label;
@@ -431,11 +437,11 @@ function showPage(pageName) {
     // Remove active class from all sections and buttons
     posSection.classList.remove('active');
     historySection.classList.remove('active');
-    monthlySection.classList.remove('active'); // New: Monthly Section
+    monthlySection.classList.remove('active');
     
     posNavBtn.classList.remove('active');
     historyNavBtn.classList.remove('active');
-    monthlyNavBtn.classList.remove('active'); // New: Monthly Nav Button
+    monthlyNavBtn.classList.remove('active');
 
     // Add active class to the selected section and button
     if (pageName === 'pos') {
@@ -451,7 +457,7 @@ function showPage(pageName) {
         } else {
             renderSalesHistory(new Date()); // Default to today if nothing selected
         }
-    } else if (pageName === 'monthly') { // New: Monthly Report Page
+    } else if (pageName === 'monthly') {
         monthlySection.classList.add('active');
         monthlyNavBtn.classList.add('active');
         renderMonthlyReport(); // สำคัญ: เรียก renderMonthlyReport() เมื่อแท็บนี้ถูกเปิดใช้งาน

@@ -6,7 +6,6 @@
     <title>กาแฟไอ้สุ - POS System</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
-    <!-- เพิ่ม Chart.js CDN ที่นี่ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -15,23 +14,19 @@
         <nav>
             <button onclick="showPage('pos')" class="active" id="posNavBtn">หน้าร้าน (POS)</button>
             <button onclick="showPage('history')" id="historyNavBtn">สรุปยอดขายรายวัน</button>
-            <!-- เพิ่มปุ่มสำหรับภาพรวมรายเดือน -->
             <button onclick="showPage('monthly')" id="monthlyNavBtn">ภาพรวมรายเดือน</button>
         </nav>
     </header>
 
     <main>
-        <!-- POS Section -->
         <section id="pos-section" class="page-section active">
             <div class="pos-container">
                 <div class="menu-items-grid">
-                    <!-- Menu items will be loaded here by JavaScript -->
-                </div>
+                    </div>
                 <div class="order-summary">
                     <h2>รายการออเดอร์</h2>
                     <ul id="order-list">
-                        <!-- Order items will be loaded here by JavaScript -->
-                    </ul>
+                        </ul>
                     <div class="order-total">
                         <strong>ยอดรวม:</strong> <span id="order-total-span">0.00</span> บาท
                     </div>
@@ -43,7 +38,6 @@
             </div>
         </section>
 
-        <!-- Sales History Section -->
         <section id="history-section" class="page-section">
             <h2>สรุปยอดขายประจำวัน</h2>
             <div class="date-picker-container">
@@ -63,6 +57,10 @@
                     <h3>เงินโอน</h3>
                     <p id="daily-transfer-sales">0.00 บาท</p>
                 </div>
+                <div class="summary-card items-sold">
+                    <h3>จำนวนแก้วที่ขายได้</h3>
+                    <p id="daily-total-items">0 แก้ว</p>
+                </div>
             </div>
 
             <h3>รายการขายทั้งหมด</h3>
@@ -76,12 +74,10 @@
                     </tr>
                 </thead>
                 <tbody id="sales-list-table-body">
-                    <!-- Sales records will be loaded here by JavaScript -->
-                </tbody>
+                    </tbody>
             </table>
         </section>
 
-        <!-- New: Monthly Report Section -->
         <section id="monthly-section" class="page-section">
             <h2>ภาพรวมยอดขายประจำเดือน (30 วันย้อนหลัง)</h2>
             <div class="monthly-summary-container">
@@ -106,22 +102,7 @@
                 </div>
             </div>
             
-            <!-- Optional: Table for detailed monthly sales, if needed later -->
-            <!-- <h3>รายการขายทั้งหมด (30 วันย้อนหลัง)</h3>
-            <table class="sales-table">
-                <thead>
-                    <tr>
-                        <th>วันที่ & เวลา</th>
-                        <th>รายการ</th>
-                        <th>ยอดรวม</th>
-                        <th>ช่องทาง</th>
-                    </tr>
-                </thead>
-                <tbody id="monthly-sales-list-table-body">
-                    
-                </tbody>
-            </table> -->
-        </section>
+            </section>
 
     </main>
 
