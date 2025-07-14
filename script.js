@@ -5,7 +5,7 @@ const menuItems = [
     { name: "โกโก้นมสด", price: 35 },
     { name: "อเมริกาโน่มะพร้าว", price: 45 },
     { name: "อเมริกาโน่ส้ม", price: 45 },
-    { name: "อเมริกาโน่น้ำผึ้งมะนาว", price: 45 }, // แก้ราคาจาก 5 เป็น 45 บาท
+    { name: "อเมริกาโน่น้ำผึ้งมะนาว", price: 45 },
     { name: "คาราเมลมัคคิอาโต้", price: 50 },
     { name: "เอสเปรสโซ่", price: 45 },
     { name: "คาปูชิโน่", price: 45 },
@@ -16,8 +16,8 @@ const menuItems = [
     { name: "มัทฉะลาเต้", price: 45 },
     { name: "มัทฉะน้ำส้ม", price: 45 },
     { name: "มัทฉะน้ำผึ้งมะนาว", price: 45 },
-    { name: "เลม่อนน้ำผึ้งโซดา", price: 35}
-]
+    { name: "เลม่อนดองน้ำผึ้งโซดา", price: 35 }
+];
 
 let currentOrder = [];
 let salesHistory = []; // Stores all sales records
@@ -141,33 +141,91 @@ function renderOrder() {
     orderTotalSpan.textContent = total.toFixed(2);
 }
 
+// *** เริ่มการแก้ไขในฟังก์ชัน completeSale ตรงนี้ ***
 function completeSale(paymentType) {
+    // 1. ตรวจสอบว่ามีรายการในออเดอร์หรือไม่
     if (currentOrder.length === 0) {
         alert('กรุณาเพิ่มรายการสินค้าในออเดอร์ก่อนค่ะ');
         return;
     }
 
     const totalAmount = parseFloat(orderTotalSpan.textContent);
+    let finalAlertMessage = ''; // ตัวแปรสำหรับเก็บข้อความแจ้งเตือนสุดท้าย
+
+    // ตรวจสอบประเภทการชำระเงิน
+    if (paymentType === 'Cash') {
+        // 2. ถ้าเป็นการชำระเงินสด:
+        //    แสดง prompt เพื่อขอจำนวนเงินที่ลูกค้าจ่ายมา
+        const amountPaidStr = prompt(`ยอดรวมที่ต้องชำระ: ${totalAmount.toFixed(2)} บาท\nกรุณาใส่จำนวนเงินที่ลูกค้าจ่ายมา:`);
+
+        //    หากผู้ใช้กดยกเลิก prompt
+        if (amountPaidStr === null) {
+            return; // ยกเลิกการทำรายการ
+        }
+
+        const amountPaid = parseFloat(amountPaidStr); // แปลงข้อความเป็นตัวเลข
+
+        //    3. ตรวจสอบความถูกต้องของจำนวนเงินที่รับมา
+        if (isNaN(amountPaid) || amountPaid < totalAmount) {
+            alert('จำนวนเงินที่รับไม่ถูกต้อง หรือน้อยกว่ายอดรวมที่ต้องชำระ กรุณาลองอีกครั้ง');
+            return; // ยกเลิกการทำรายการ
+        }
+
+        //    4. คำนวณเงินทอน
+        const change = amountPaid - totalAmount;
+
+        //    5. แสดง Pop-up ยืนยันการชำระเงิน พร้อมยอดเงินทอน
+        const confirmMessage = `ยืนยันการชำระเงินสด?\nยอดรวม: ${totalAmount.toFixed(2)} บาท\nเงินที่ได้รับ: ${amountPaid.toFixed(2)} บาท\nเงินทอน: ${change.toFixed(2)} บาท`;
+        const confirmed = confirm(confirmMessage);
+
+        //    หากผู้ใช้กดยกเลิกการยืนยัน
+        if (!confirmed) {
+            return; // ยกเลิกการทำรายการ
+        }
+        
+        // กำหนดข้อความแจ้งเตือนสำหรับเงินสด
+        finalAlertMessage = `ชำระเงินสดเรียบร้อยแล้ว\nยอดรวม: ${totalAmount.toFixed(2)} บาท\nเงินที่ได้รับ: ${amountPaid.toFixed(2)} บาท\nเงินทอน: ${change.toFixed(2)} บาท`;
+
+    } else if (paymentType === 'Transfer') {
+        // 6. ถ้าเป็นการชำระเงินโอน:
+        //    แสดง Pop-up ยืนยันการชำระเงินโอน
+        const confirmed = confirm(`ยืนยันการชำระเงินโอน ยอดรวม ${totalAmount.toFixed(2)} บาท ใช่หรือไม่?`);
+        
+        //    หากผู้ใช้กดยกเลิกการยืนยัน
+        if (!confirmed) {
+            return; // ยกเลิกการทำรายการ
+        }
+        // กำหนดข้อความแจ้งเตือนสำหรับเงินโอน
+        finalAlertMessage = `ชำระเงินโอนเรียบร้อยแล้ว ยอดรวม ${totalAmount.toFixed(2)} บาท`;
+    } else {
+        // กรณีมี paymentType อื่นๆ ที่ยังไม่ได้ระบุ
+        alert('ไม่รองรับวิธีการชำระเงินนี้');
+        return;
+    }
+
+    // *** ส่วนนี้คือ Logic การบันทึกการขาย ที่ทำงานเหมือนเดิม แต่จะถูกเรียกหลังจากการยืนยัน ***
     const sale = {
         timestamp: new Date().toISOString(),
-        items: JSON.parse(JSON.stringify(currentOrder)), // Deep copy of current order items
+        items: JSON.parse(JSON.stringify(currentOrder)), // Deep copy ของรายการสินค้า
         totalAmount: totalAmount,
         paymentType: paymentType
     };
 
-    salesHistory.push(sale);
-    saveSalesHistory();
+    salesHistory.push(sale); // เพิ่มรายการขายเข้าประวัติ
+    saveSalesHistory();      // บันทึกประวัติลง Local Storage
 
-    currentOrder = []; // Clear current order
-    renderOrder(); // Update POS display
+    currentOrder = []; // ล้างออเดอร์ปัจจุบัน
+    renderOrder();     // อัปเดตการแสดงผลหน้า POS
 
-    alert(`ชำระเงินเรียบร้อยแล้ว (${paymentType}) ยอดรวม ${totalAmount.toFixed(2)} บาท`);
+    alert(finalAlertMessage); // แสดงข้อความแจ้งเตือนตามที่เตรียมไว้
     
-    // After completing a sale, re-render history for today
+    // หลังจากทำรายการขายเสร็จสิ้น ให้อัปเดตประวัติการขายสำหรับวันนี้
     const today = new Date();
-    historyDatePicker.value = formatDateForInput(today); // Ensure date picker shows today
-    renderSalesHistory(today); // Update history view
+    historyDatePicker.value = formatDateForInput(today); // ตั้งค่า Date Picker เป็นวันนี้
+    renderSalesHistory(today); // แสดงประวัติการขายสำหรับวันนี้
 }
+// *** สิ้นสุดการแก้ไขในฟังก์ชัน completeSale ***
+
 
 // --- Sales History Functions ---
 
