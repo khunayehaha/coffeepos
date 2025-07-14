@@ -1,3 +1,5 @@
+// script.js
+
 const menuItems = [
     { name: "มัทฉะน้ำมะพร้าว", price: 45 },
     { name: "ชาไทย", price: 30 },
@@ -16,7 +18,10 @@ const menuItems = [
     { name: "มัทฉะลาเต้", price: 45 },
     { name: "มัทฉะน้ำส้ม", price: 45 },
     { name: "มัทฉะน้ำผึ้งมะนาว", price: 45 },
-    { name: "เลม่อนดองน้ำผึ้งโซดา", price: 35 }
+    { name: "เลม่อนดองน้ำผึ้งโซดา", price: 35 },
+    { name: "เปลี่ยนนม OAT", price: 10 },
+    { name: "เพิ่ม SHOT กาแฟ", price: 10},
+    { name: "ลูกค้านำแก้วมาเอง", price: -5 } // ***** แก้ไขตรงนี้เป็น -5 บาท *****
 ];
 
 let currentOrder = [];
@@ -113,6 +118,9 @@ function renderMenuItems() {
 }
 
 function addItemToOrder(item) {
+    // โค้ดส่วนนี้ทำงานได้ดีอยู่แล้วแม้จะมีราคาติดลบ
+    // ถ้าสินค้า (item.name) มีอยู่ในตะกร้าแล้ว ให้เพิ่มจำนวน
+    // ถ้ายังไม่มีในตะกร้า ให้เพิ่มเข้าไปใหม่
     const existingItem = currentOrder.find(orderItem => orderItem.name === item.name);
     if (existingItem) {
         existingItem.quantity++;
@@ -146,7 +154,9 @@ function renderOrder() {
     } else {
         currentOrder.forEach((item, index) => {
             const li = document.createElement('li');
-            const itemTotalPrice = item.price * item.quantity;
+            const itemTotalPrice = item.price * item.quantity; // item.price จะเป็น -5 ถ้าเป็น "ลูกค้านำแก้วมาเอง"
+
+            // คำนวณยอดรวม ซึ่งจะรวมค่าติดลบเข้าไปด้วย
             total += itemTotalPrice;
 
             li.innerHTML = `
@@ -320,6 +330,10 @@ function renderMonthlyReport() {
             transferSales += sale.totalAmount;
         }
 
+        // ในส่วนนี้เราจะนับจำนวนสินค้า ไม่ว่าจะเป็นสินค้าปกติหรือรายการลดราคา
+        // หากต้องการให้นับเฉพาะสินค้าหลัก ไม่รวมรายการเสริม/ลดราคา ควรเพิ่มเงื่อนไข
+        // เช่น if (item.price > 0) { productQuantities[item.name] = ... }
+        // แต่ในที่นี้ เรานับทุกรายการที่ถูกเพิ่มเข้ามา
         sale.items.forEach(item => {
             productQuantities[item.name] = (productQuantities[item.name] || 0) + item.quantity;
         });
@@ -374,7 +388,9 @@ function drawProductSalesPieChart(productQuantities) {
                                 label += ': ';
                             }
                             if (context.parsed !== null) {
-                                label += context.parsed + ' แก้ว'; // Display "X แก้ว"
+                                // เรายังคงแสดงเป็น "X แก้ว" สำหรับทุกรายการ
+                                // หากต้องการแยกประเภทการแสดงผล (เช่น "X ส่วนลด") ต้องเพิ่มเงื่อนไขตรงนี้
+                                label += context.parsed + ' แก้ว';
                             }
                             return label;
                         }
